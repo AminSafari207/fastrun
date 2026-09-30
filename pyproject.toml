@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "fastrun"
+version = "0.1.0"
+description = "A lightweight command launcher for named local applications and scripts"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Amin Safari" }
+]
+
+
+[project.scripts]
+fastrun = "fastrun.cli:main"
+
+
+[tool.setuptools.packages.find]
+where = ["src"]

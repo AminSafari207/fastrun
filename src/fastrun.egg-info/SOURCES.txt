@@ -1,0 +1,16 @@
+LICENSE
+README.md
+pyproject.toml
+src/fastrun/__init__.py
+src/fastrun/__main__.py
+src/fastrun/cli.py
+src/fastrun/config.py
+src/fastrun/errors.py
+src/fastrun/runner.py
+src/fastrun.egg-info/PKG-INFO
+src/fastrun.egg-info/SOURCES.txt
+src/fastrun.egg-info/dependency_links.txt
+src/fastrun.egg-info/entry_points.txt
+src/fastrun.egg-info/top_level.txt
+tests/test_config.py
+tests/test_runner.py

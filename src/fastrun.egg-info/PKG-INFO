@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: fastrun
+Version: 0.1.0
+Summary: A lightweight command launcher for named local applications and scripts
+Author: Amin Safari
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
