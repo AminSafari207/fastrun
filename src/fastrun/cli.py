@@ -5,6 +5,7 @@ from importlib.metadata import version
 def main():
     parser = argparse.ArgumentParser(
         prog="fastrun",
+        usage="fastrun [fastrun-options] runnable-name [runnable-args...]",
         description="A lightweight command launcher",
     )
 
@@ -18,6 +19,8 @@ def main():
         version="fastrun " + version("fastrun"),
         help="Print fastrun version",
     )
+    parser.add_argument("runnable_name")
+    parser.add_argument("runnable_args", nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
