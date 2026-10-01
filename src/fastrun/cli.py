@@ -1,4 +1,5 @@
 import argparse
+from importlib.metadata import version
 
 
 def main():
@@ -13,7 +14,8 @@ def main():
     parser.add_argument(
         "-v",
         "--version",
-        action="store_true",
+        action="version",
+        version="fastrun " + version("fastrun"),
         help="Print fastrun version",
     )
 
