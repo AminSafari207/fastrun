@@ -1,5 +1,7 @@
 import argparse
+
 from importlib.metadata import version
+from fastrun.models import RunRequest
 
 
 def main():
@@ -24,4 +26,11 @@ def main():
 
     args = parser.parse_args()
 
+    run_request = RunRequest(
+        debug=args.debug,
+        runnable_name=args.runnable_name,
+        runnable_args=args.runnable_args,
+    )
+
+    print(run_request)
     print(args)
