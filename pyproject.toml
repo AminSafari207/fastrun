@@ -13,7 +13,9 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Amin Safari" }
 ]
-
+dependencies = [
+    "PyYAML>=6.0",
+]
 
 [project.scripts]
 fastrun = "fastrun.cli:main"
