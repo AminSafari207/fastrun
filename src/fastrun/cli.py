@@ -1,10 +1,12 @@
 import argparse
-
 from importlib.metadata import version
+
+from fastrun.errors import FastrunError
 from fastrun.models import RunRequest
+from fastrun.runner import Runner
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(
         prog="fastrun",
         usage="fastrun [fastrun-options] runnable-name [runnable-args...]",
@@ -26,11 +28,14 @@ def main():
 
     args = parser.parse_args()
 
-    run_request = RunRequest(
+    request = RunRequest(
         debug=args.debug,
         runnable_name=args.runnable_name,
         runnable_args=args.runnable_args,
     )
 
-    print(run_request)
-    print(args)
+    try:
+        return Runner().run(request)
+    except FastrunError as exc:
+        print(f"fastrun: error: {exc}")
+        return 1
