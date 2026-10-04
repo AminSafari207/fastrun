@@ -11,6 +11,7 @@ def main() -> int:
         prog="fastrun",
         usage="fastrun [fastrun-options] runnable-name [runnable-args...]",
         description="A lightweight command launcher",
+        add_help=False,
     )
 
     parser.add_argument(
@@ -23,6 +24,13 @@ def main() -> int:
         version="fastrun " + version("fastrun"),
         help="Print fastrun version",
     )
+    parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help="Show this help message and exit",
+    )
+
     parser.add_argument("runnable_name")
     parser.add_argument("runnable_args", nargs=argparse.REMAINDER)
 
