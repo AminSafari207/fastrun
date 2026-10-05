@@ -11,13 +11,15 @@ from fastrun.models import Runnable
 
 
 class ConfigLoader:
-    CONFIG_DIRECTORY = Path.home() / ".config" / "fastrun"
+    CONFIG_DIRECTORY = Path.home() / ".config" / "fastrun" / "runnables"
 
-    CONFIG_FILES = ("runnables.json", "runnables.yaml", "runnables.yml")
+    CONFIG_FILES = (
+        "runnables.json",
+        "runnables.yaml",
+        "runnables.yml",
+    )
 
-    TEMPLATE = {  # noqa: RUF012
-        "example": {"path": "/path/to/runnable", "command": "./run.sh --example-flag"}
-    }
+    TEMPLATE = {}
 
     def load(self) -> dict[str, Runnable]:
         config_path = self._find_config()
@@ -35,17 +37,43 @@ class ConfigLoader:
         return self._parse(raw_data, config_path)
 
     def _find_config(self) -> Path | None:
-        for filename in self.CONFIG_FILES:
-            path = self.CONFIG_DIRECTORY / filename
+        self.CONFIG_DIRECTORY.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
-            if path.is_file():
-                return path
+        found = [
+            self.CONFIG_DIRECTORY / name
+            for name in self.CONFIG_FILES
+            if (self.CONFIG_DIRECTORY / name).is_file()
+        ]
 
-        return None
+        if len(found) > 1:
+            names = ", ".join(path.name for path in found)
+
+            raise ConfigError(
+                "Multiple runnable configuration files found: "
+                f"{names}. Use only one of "
+                "runnables.json, runnables.yaml, or runnables.yml."
+            )
+
+        unsupported = [
+            path
+            for path in self.CONFIG_DIRECTORY.glob("runnables.*")
+            if path.is_file() and path.name not in self.CONFIG_FILES
+        ]
+
+        if unsupported:
+            name = unsupported[0].name
+
+            raise ConfigError(
+                f"Unsupported runnable configuration file '{name}'. "
+                "Use only runnables.json, runnables.yaml, or runnables.yml."
+            )
+
+        return found[0] if found else None
 
     def _create_template(self) -> Path:
-        self.CONFIG_DIRECTORY.mkdir(parents=True, exist_ok=True)
-
         config_path = self.CONFIG_DIRECTORY / "runnables.json"
 
         with config_path.open("w", encoding="utf-8") as file:
@@ -53,6 +81,8 @@ class ConfigLoader:
             file.write("\n")
 
         return config_path
+    
+    def _copy_examples
 
     def _load_file(self, path: Path) -> Any:
         with path.open("r", encoding="utf-8") as file:
@@ -62,34 +92,52 @@ class ConfigLoader:
             if path.suffix in {".yaml", ".yml"}:
                 return yaml.safe_load(file)
 
-        raise ConfigError(f"Unsupported configuration format: {path.suffix}")
+        raise ConfigError(f"Unsupported configuration format: '{path.name}'")
 
-    def _parse(self, data: Runnable, path: Path) -> dict[str, Runnable]:
+    def _parse(
+        self,
+        data: Any,
+        path: Path,
+    ) -> dict[str, Runnable]:
         if not isinstance(data, dict):
-            raise ConfigError(f"Configuration root must be an object: {path}")
+            raise ConfigError(f"Configuration '{path.name}' must contain an object.")
+
+        runnables = data.get("runnables")
+
+        if runnables is None:
+            return {}
+
+        if not isinstance(runnables, dict):
+            raise ConfigError(
+                f"Configuration '{path.name}' must contain " "a 'runnables' object."
+            )
 
         result: dict[str, Runnable] = {}
 
-        for name, value in data.items():
+        for name, value in runnables.items():
             if not isinstance(name, str):
-                raise ConfigError(f"Runnable name must be a string: {path}")
+                raise ConfigError("Runnable names must be strings.")
 
             if not isinstance(value, dict):
-                raise ConfigError(
-                    f"Configuration for '{name}' must be an object: {path}"
-                )
+                raise ConfigError(f"Runnable '{name}' must contain an object.")
 
             command = value.get("command")
             runnable_path = value.get("path")
 
             if not isinstance(command, str) or not command.strip():
                 raise ConfigError(
-                    f"Runnable '{name}' must define a non-empty 'command'"
+                    f"Runnable '{name}' must have a non-empty " "'command' value."
                 )
 
-            if runnable_path is not None and not isinstance(runnable_path, str):
-                raise ConfigError(f"Runnable '{name}' has an invalid 'path'")
+            if runnable_path is not None and not isinstance(
+                runnable_path,
+                str,
+            ):
+                raise ConfigError(f"Runnable '{name}' has an invalid 'path' value.")
 
-            result[name] = Runnable(command=command, path=runnable_path)
+            result[name] = Runnable(
+                command=command,
+                path=runnable_path,
+            )
 
         return result
