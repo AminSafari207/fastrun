@@ -1,0 +1,12 @@
+{
+  "runnables": {
+    "test_fastrun": {
+      "path": "~/.config/fastrun/examples",
+      "command": "python3 test.py"
+    },
+    "example": {
+      "path": "~/projects/example",
+      "command": "./run.sh --verbose"
+    }
+  }
+}

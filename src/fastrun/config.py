@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from fastrun.models import Runnable
 
 class ConfigLoader:
     CONFIG_DIRECTORY = Path.home() / ".config" / "fastrun" / "runnables"
+    EXAMPLES_DIRECTORY = Path.home() / ".config" / "fastrun" / "examples"
 
     CONFIG_FILES = (
         "runnables.json",
@@ -19,13 +21,15 @@ class ConfigLoader:
         "runnables.yml",
     )
 
-    TEMPLATE = {}
+    TEMPLATE = {}  # noqa: RUF012
 
     def load(self) -> dict[str, Runnable]:
         config_path = self._find_config()
 
         if config_path is None:
             config_path = self._create_template()
+
+        self._copy_examples()
 
         try:
             raw_data = self._load_file(config_path)
@@ -81,8 +85,25 @@ class ConfigLoader:
             file.write("\n")
 
         return config_path
-    
-    def _copy_examples
+
+    def _copy_examples(self) -> None:
+        self.EXAMPLES_DIRECTORY.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        examples = resources.files("fastrun").joinpath("examples")
+
+        for example in examples.iterdir():
+            if not example.is_file():
+                continue
+
+            destination = self.EXAMPLES_DIRECTORY / example.name
+
+            if destination.exists():
+                continue
+
+            destination.write_bytes(example.read_bytes())
 
     def _load_file(self, path: Path) -> Any:
         with path.open("r", encoding="utf-8") as file:

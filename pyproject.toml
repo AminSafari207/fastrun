@@ -23,3 +23,9 @@ fastrun = "fastrun.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+fastrun = [
+    "examples/*.example",
+    "examples/test.py",
+]

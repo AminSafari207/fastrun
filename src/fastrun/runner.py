@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastrun.config import ConfigLoader
 from fastrun.errors import RunnableExecutionError, RunnableNotFoundError
-from fastrun.models import RunRequest, Runnable
+from fastrun.models import Runnable, RunRequest
 
 
 class Runner:
