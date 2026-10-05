@@ -1,4 +1,5 @@
 import argparse
+import sys
 from importlib.metadata import version
 
 from fastrun.config import ConfigLoader
@@ -6,11 +7,32 @@ from fastrun.errors import FastrunError
 from fastrun.models import RunRequest
 from fastrun.runner import Runner
 
+COMPLETION_OPTIONS = (
+    "--debug",
+    "--version",
+    "--help",
+)
+
+
+def _print_completions(config_loader: ConfigLoader) -> int:
+    for option in COMPLETION_OPTIONS:
+        print(option)
+
+    print()
+
+    for runnable_name in config_loader.load():
+        print(runnable_name)
+
+    return 0
+
 
 def main() -> int:
     try:
         config_loader = ConfigLoader()
         config_loader.initialize()
+
+        if "--complete" in sys.argv[1:]:
+            return _print_completions(config_loader)
 
         parser = argparse.ArgumentParser(
             prog="fastrun",
@@ -22,6 +44,7 @@ def main() -> int:
         parser.add_argument(
             "-d", "--debug", action="store_true", help="Print live running program log"
         )
+
         parser.add_argument(
             "-v",
             "--version",
@@ -29,6 +52,7 @@ def main() -> int:
             version="fastrun " + version("fastrun"),
             help="Print fastrun version",
         )
+
         parser.add_argument(
             "-h",
             "--help",
@@ -36,10 +60,19 @@ def main() -> int:
             help="Show this help message and exit",
         )
 
+        parser.add_argument(
+            "--complete",
+            action="store_true",
+            help=argparse.SUPPRESS,
+        )
+
         parser.add_argument("runnable_name")
         parser.add_argument("runnable_args", nargs=argparse.REMAINDER)
 
         args = parser.parse_args()
+
+        # if args.complete:
+        #     return _print_completions(config_loader)
 
         request = RunRequest(
             debug=args.debug,
