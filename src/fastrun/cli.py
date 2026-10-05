@@ -24,7 +24,7 @@ def _print_completions(config_loader: ConfigLoader) -> int:
 
     print()
 
-    for runnable_name in config_loader.load():
+    for runnable_name in sorted(config_loader.load()):
         print(runnable_name)
 
     return 0
