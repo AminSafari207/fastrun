@@ -9,10 +9,13 @@ A lightweight, configurable command launcher for running frequently used command
 - Define base arguments for each runnable
 - Pass additional arguments from the command line
 - Optionally define a working directory
+- Run commands in the background without waiting for them
 - Stream runnable output with `--debug`
 - Supports Linux, macOS, and Windows
 
 ## Installation
+
+Requires Python 3.9 or later.
 
 Install from the project directory:
 
@@ -25,7 +28,7 @@ pip install -e .
 fastrun stores its configuration in:
 
 ```text
-~/.config/fastrun/
+~/.config/fastrun/runnables/
 ```
 
 The configuration file must be exactly one of:
@@ -42,11 +45,22 @@ Only one runnable configuration file may exist at a time.
 
 ```json
 {
-  "example": {
-    "path": "~/projects/example",
-    "command": "./run.sh --verbose"
+  "runnables": {
+    "example": {
+      "path": "~/projects/example",
+      "command": "./run.sh --verbose"
+    }
   }
 }
+```
+
+### YAML example
+
+```yaml
+runnables:
+  example:
+    path: ~/projects/example
+    command: ./run.sh --verbose
 ```
 
 The `command` defines the base command and its arguments.
@@ -71,20 +85,38 @@ For example:
 
 ```json
 {
-  "server": {
-    "path": "~/projects/my-server",
-    "command": "./start.sh"
+  "runnables": {
+    "server": {
+      "path": "~/projects/my-server",
+      "command": "./start.sh"
+    }
   }
 }
 ```
 
+## Running in the background
+
+By default fastrun starts the runnable and returns immediately, without waiting
+for it and without printing any output:
+
+```bash
+fastrun server
+```
+
+The runnable keeps running in the background after fastrun exits.
+
 ## Debugging
 
-Use `--debug` to allow the runnable's output to be displayed in the terminal:
+Use `--debug` to run the runnable in the foreground and stream its output to the
+terminal:
 
 ```bash
 fastrun --debug server
 ```
+
+In debug mode, `Ctrl+C` stops the runnable. Because every runnable is started in
+its own process group, fastrun also stops the whole process tree it spawned and
+exits with code `130`.
 
 ## Command-line options
 
