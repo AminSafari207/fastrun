@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import shlex
+import signal
 import subprocess
 from pathlib import Path
 
@@ -62,16 +64,30 @@ class Runner:
 
         try:
             if debug:
-                process = subprocess.run(
+                process = subprocess.Popen(
                     command,
                     cwd=cwd,
                     stdin=None,
                     stdout=None,
                     stderr=None,
-                    check=False,
+                    start_new_session=True,
                 )
 
-                return process.returncode
+                try:
+                    return process.wait()
+
+                except KeyboardInterrupt:
+                    try:
+                        os.killpg(
+                            process.pid,
+                            signal.SIGTERM,
+                        )
+                    except ProcessLookupError:
+                        pass
+
+                    process.wait()
+
+                    return 130
 
             subprocess.Popen(
                 command,
