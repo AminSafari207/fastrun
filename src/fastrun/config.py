@@ -21,15 +21,20 @@ class ConfigLoader:
         "runnables.yml",
     )
 
-    TEMPLATE = {}  # noqa: RUF012
+    TEMPLATE = {"runnables": {}}  # noqa: RUF012
 
-    def load(self) -> dict[str, Runnable]:
+    def initialize(self) -> Path:
         config_path = self._find_config()
 
         if config_path is None:
             config_path = self._create_template()
 
         self._copy_examples()
+
+        return config_path
+
+    def load(self) -> dict[str, Runnable]:
+        config_path = self.initialize()
 
         try:
             raw_data = self._load_file(config_path)
