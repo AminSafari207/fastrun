@@ -10,11 +10,15 @@ from fastrun.models import RunRequest, Runnable
 
 
 class Runner:
-    def __init__(self, config_loader: ConfigLoader | None = None):
+    def __init__(
+        self,
+        config_loader: ConfigLoader | None = None,
+    ):
         self.config_loader = config_loader or ConfigLoader()
 
     def run(self, request: RunRequest) -> int:
         runnables = self.config_loader.load()
+
         runnable = runnables.get(request.runnable_name)
 
         if runnable is None:
@@ -22,7 +26,10 @@ class Runner:
                 f"Runnable '{request.runnable_name}' was not found"
             )
 
-        command = self.build_command(runnable, request.runnable_args)
+        command = self.build_command(
+            runnable,
+            request.runnable_args,
+        )
 
         return self.execute(
             command=command,
@@ -40,7 +47,10 @@ class Runner:
         if not base_command:
             raise RunnableExecutionError("Runnable command cannot be empty")
 
-        return [*base_command, *runnable_args]
+        return [
+            *base_command,
+            *runnable_args,
+        ]
 
     def execute(
         self,
@@ -51,18 +61,30 @@ class Runner:
         cwd = Path(path).expanduser() if path else None
 
         try:
-            process = subprocess.run(
+            if debug:
+                process = subprocess.run(
+                    command,
+                    cwd=cwd,
+                    stdin=None,
+                    stdout=None,
+                    stderr=None,
+                    check=False,
+                )
+
+                return process.returncode
+
+            subprocess.Popen(
                 command,
                 cwd=cwd,
-                stdin=None,
-                stdout=None if debug else subprocess.DEVNULL,
-                stderr=None if debug else subprocess.DEVNULL,
-                text=True,
-                check=False,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
             )
+
+            return 0
+
         except OSError as exc:
             raise RunnableExecutionError(
                 f"Failed to execute '{command[0]}': {exc}"
             ) from exc
-
-        return process.returncode
