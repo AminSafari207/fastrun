@@ -162,6 +162,46 @@ class CompletionManagerTests(unittest.TestCase):
 
         install.assert_not_called()
 
+    @patch("fastrun.completion.completion.system", return_value="Darwin")
+    @patch("fastrun.completion.completion.get_shell", return_value="bash")
+    @patch.object(CompletionManager, "_install")
+    def test_macos_bash_uses_bash_completion(
+        self,
+        install,
+        get_shell,
+        system,
+    ):
+        manager = CompletionManager()
+
+        manager.install()
+
+        install.assert_called_once()
+
+        path, script = install.call_args.args
+
+        self.assertEqual(path.name, "fastrun")
+        self.assertIn("_fastrun()", script)
+
+    @patch("fastrun.completion.completion.system", return_value="Darwin")
+    @patch("fastrun.completion.completion.get_shell", return_value="zsh")
+    @patch.object(CompletionManager, "_install")
+    def test_macos_zsh_uses_zsh_completion(
+        self,
+        install,
+        get_shell,
+        system,
+    ):
+        manager = CompletionManager()
+
+        manager.install()
+
+        install.assert_called_once()
+
+        path, script = install.call_args.args
+
+        self.assertEqual(path.name, "_fastrun")
+        self.assertIn("#compdef fastrun", script)
+
 
 class PowerShellTests(unittest.TestCase):
 

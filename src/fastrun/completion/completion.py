@@ -46,7 +46,31 @@ class CompletionManager:
             )
 
     def _install_macos(self, shell: str | None) -> None:
-        pass
+        if shell == "bash":
+            from fastrun.completion.shells.bash import get_script
+
+            self._install(
+                Path.home()
+                / ".local"
+                / "share"
+                / "bash-completion"
+                / "completions"
+                / "fastrun",
+                get_script(),
+            )
+
+        elif shell == "zsh":
+            from fastrun.completion.shells.zsh import get_script
+
+            self._install(
+                Path.home()
+                / ".local"
+                / "share"
+                / "zsh"
+                / "site-functions"
+                / "_fastrun",
+                get_script(),
+            )
 
     def _install_windows(self, shell: str | None) -> None:
         if shell == "powershell":
