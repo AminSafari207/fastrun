@@ -8,7 +8,8 @@ SRC_DIR = Path(__file__).parent / "src"
 
 sys.path.insert(0, str(SRC_DIR))
 
-from fastrun.config import ConfigLoader  # noqa: E402
+from fastrun.completion.completion import CompletionManager
+from fastrun.config import ConfigLoader
 
 
 class PostInstallCommand(install):
@@ -16,6 +17,7 @@ class PostInstallCommand(install):
     def run(self):
         super().run()
         ConfigLoader().initialize()
+        CompletionManager().install()
 
 
 setup(
