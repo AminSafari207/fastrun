@@ -11,6 +11,7 @@ A lightweight, configurable command launcher for running frequently used command
 - Optionally define a working directory
 - Run commands in the background without waiting for them
 - Stream runnable output with `--debug`
+- Tab completion for runnable names in bash, zsh, and PowerShell
 - Supports Linux, macOS, and Windows
 
 ## Installation
