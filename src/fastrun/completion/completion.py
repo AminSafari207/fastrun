@@ -22,7 +22,7 @@ class CompletionManager:
         if shell == "bash":
             from fastrun.completion.shells.bash import get_script
 
-            self._install_bash(
+            self._install(
                 Path.home()
                 / ".local"
                 / "share"
@@ -32,13 +32,26 @@ class CompletionManager:
                 get_script(),
             )
 
+        elif shell == "zsh":
+            from fastrun.completion.shells.zsh import get_script
+
+            self._install(
+                Path.home()
+                / ".local"
+                / "share"
+                / "zsh"
+                / "site-functions"
+                / "_fastrun",
+                get_script(),
+            )
+
     def _install_macos(self, shell: str | None) -> None:
         pass
 
     def _install_windows(self, shell: str | None) -> None:
         pass
 
-    def _install_bash(self, path: Path, script: str) -> None:
+    def _install(self, path: Path, script: str) -> None:
         path.parent.mkdir(
             parents=True,
             exist_ok=True,
