@@ -8,6 +8,7 @@ from fastrun.completion.completion import CompletionManager
 from fastrun.completion.provider import get_completions
 from fastrun.completion.shell import get_shell
 from fastrun.completion.shells.bash import get_script as get_bash_script
+from fastrun.completion.shells.powershell import get_script as get_powershell_script
 from fastrun.completion.shells.zsh import get_script as get_zsh_script
 
 
@@ -160,6 +161,114 @@ class CompletionManagerTests(unittest.TestCase):
         manager.install()
 
         install.assert_not_called()
+
+
+class PowerShellTests(unittest.TestCase):
+
+    def test_powershell_script_contains_fastrun_completion(self):
+        script = get_powershell_script()
+
+        self.assertIn(
+            "Register-ArgumentCompleter",
+            script,
+        )
+
+        self.assertIn(
+            "fastrun.completion.provider",
+            script,
+        )
+
+    @patch("fastrun.completion.shells.powershell.shutil.which")
+    @patch("fastrun.completion.shells.powershell.subprocess.run")
+    def test_get_profile_path_uses_powershell_profile(
+        self,
+        run,
+        which,
+    ):
+        which.side_effect = lambda executable: (
+            "/usr/bin/pwsh" if executable == "pwsh" else None
+        )
+
+        run.return_value.stdout = (
+            "/home/test/.config/powershell/" "Microsoft.PowerShell_profile.ps1\n"
+        )
+
+        from fastrun.completion.shells.powershell import (
+            get_profile_path,
+        )
+
+        profile = get_profile_path()
+
+        self.assertEqual(
+            profile,
+            Path("/home/test/.config/powershell/" "Microsoft.PowerShell_profile.ps1"),
+        )
+
+    def test_install_profile_loader(self):
+        from fastrun.completion.shells.powershell import (
+            _install_profile_loader,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            profile = Path(temporary_directory) / "profile.ps1"
+            completion = Path(temporary_directory) / "completions" / "fastrun.ps1"
+
+            profile.write_text(
+                "Write-Host 'my profile'\n",
+                encoding="utf-8",
+            )
+
+            _install_profile_loader(
+                profile,
+                completion,
+            )
+
+            content = profile.read_text(
+                encoding="utf-8",
+            )
+
+            self.assertIn(
+                "Write-Host 'my profile'",
+                content,
+            )
+
+            self.assertIn(
+                "# >>> fastrun completion >>>",
+                content,
+            )
+
+            self.assertIn(
+                str(completion),
+                content,
+            )
+
+    def test_install_profile_loader_is_idempotent(self):
+        from fastrun.completion.shells.powershell import (
+            _install_profile_loader,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            profile = Path(temporary_directory) / "profile.ps1"
+            completion = Path(temporary_directory) / "completions" / "fastrun.ps1"
+
+            _install_profile_loader(
+                profile,
+                completion,
+            )
+
+            _install_profile_loader(
+                profile,
+                completion,
+            )
+
+            content = profile.read_text(
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                content.count("# >>> fastrun completion >>>"),
+                1,
+            )
 
 
 if __name__ == "__main__":

@@ -49,7 +49,10 @@ class CompletionManager:
         pass
 
     def _install_windows(self, shell: str | None) -> None:
-        pass
+        if shell == "powershell":
+            from fastrun.completion.shells.powershell import install
+
+            install()
 
     def _install(self, path: Path, script: str) -> None:
         path.parent.mkdir(
